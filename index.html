@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en" class="transition-colors duration-300">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookRater</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Material Symbols for Glyphs -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Elms Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        gray: {
+                            50: '#fafafa',
+                            100: '#f5f5f5',
+                            200: '#e5e5e5',
+                            300: '#d4d4d4',
+                            400: '#a3a3a3',
+                            500: '#737373',
+                            600: '#525252',
+                            700: '#404040',
+                            800: '#262626',
+                            900: '#171717',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #f5f5f5;
+            color: #171717;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .dark body {
+            background-color: #000000; /* Pure black */
+            color: #fafafa;
+        }
+
+        /* Material Symbols styling constraints */
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+        }
+
+        /* Minimalist Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #171717;
+            cursor: pointer;
+            margin-top: -7px;
+            box-shadow: 0 0 0 4px #fafafa;
+            transition: transform 0.1s ease, background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dark input[type=range]::-webkit-slider-thumb {
+            background: #fafafa;
+            box-shadow: 0 0 0 4px #171717;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 2px;
+            cursor: pointer;
+            background: #e5e5e5;
+            border-radius: 2px;
+            transition: background 0.3s ease;
+        }
+
+        .dark input[type=range]::-webkit-slider-runnable-track {
+            background: #404040;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        /* View transition animations */
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6 sm:p-12 relative">
+
+    <div onclick="toggleDarkMode()" class="fixed top-6 right-6 flex items-center cursor-pointer group bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm px-3 py-2 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm z-50 transition-colors" title="Toggle Dark Mode">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+        <div class="relative mx-2 inline-flex h-5 w-9 items-center rounded-full transition-colors duration-300 bg-gray-200 dark:bg-gray-700 shadow-inner">
+            <span class="inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform duration-300 translate-x-[3px] dark:translate-x-[19px]"></span>
+        </div>
+        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+    </div>
+
+    <main id="app-container" class="w-full max-w-4xl mx-auto flex flex-col items-center mt-8">
+        
+        <header class="w-full text-center mb-12 fade-enter">
+            <h1 class="text-4xl sm:text-5xl font-light tracking-tight text-gray-900 dark:text-white mb-3">Book<span class="font-semibold">Rater</span></h1>
+            <p class="text-gray-500 dark:text-gray-400 font-light text-base tracking-wide">For the overthinkers</p>
+        </header>
+
+        <div id="content-area" class="w-full fade-enter" style="animation-delay: 0.1s;">
+            <!-- Content injected here -->
+        </div>
+
+    </main>
+
+    <script>
+        const ratersData = {
+            quick: {
+                id: 'quick',
+                title: 'Quick Rate',
+                description: 'Evaluate the high-level categories of the book at a glance.',
+                criteria: ['Characters', 'Enjoyment', 'Plot & Narrative Structure', 'Production', 'Themes', 'World Building', 'Writing']
+            },
+            writing: {
+                id: 'writing',
+                title: 'Writing',
+                description: 'Evaluate the mechanics and artistry of the writing itself.',
+                criteria: ['Dialogue', 'Diction (Word Choice)', 'Imagery & Sensory Detail', 'Show vs. Tell', 'Syntax & Flow', 'Voice & Tone']
+            },
+            plot: {
+                id: 'plot',
+                title: 'Plot & Narrative Structure',
+                description: 'Analyze the storyline, pacing, and architectural framework of the narrative.',
+                criteria: ['Climax & Resolution', 'Conflict', 'Pacing', 'Plot Twists', 'Subplots', 'The Hook']
+            },
+            characters: {
+                id: 'characters',
+                title: 'Characters',
+                description: 'Assess the depth, growth, and believability of the cast.',
+                criteria: ['Character Arc(s)', 'Character Depth', 'Character Quality', 'Relationship Dynamics']
+            },
+            worldbuilding: {
+                id: 'worldbuilding',
+                title: 'World Building',
+                description: 'Evaluate the environment, rules, and immersive quality of the setting.',
+                criteria: ['Amount of World Building', 'Atmosphere', 'Consistency & Logic', 'Detail', 'Lore Quality']
+            },
+            themes: {
+                id: 'themes',
+                title: 'Themes',
+                description: 'Examine the underlying messages and philosophical questions explored.',
+                criteria: ['Impact', 'Originality', 'Quality']
+            },
+            enjoyment: {
+                id: 'enjoyment',
+                title: 'Enjoyment',
+                description: 'Evaluate your personal engagement and emotional investment.',
+                criteria: ['Anticipation', 'Experience', 'Unputdownability']
+            },
+            production: {
+                id: 'production',
+                title: 'Production',
+                description: 'Review the technical execution, formatting, and narration.',
+                criteria: ['Narration', 'Sound Effects', 'Text Formatting', 'Visuals']
+            },
+            genre: {
+                id: 'genre',
+                title: 'Genre Specifics',
+                description: 'Select a primary genre to evaluate its unique tropes and expectations.',
+                criteria: [] 
+            },
+            genre_romance: {
+                id: 'genre_romance',
+                title: 'Romance',
+                description: 'Evaluate romance-specific elements and tropes.',
+                criteria: ['Chemistry', 'Conflict', 'Steam']
+            },
+            genre_scifi: {
+                id: 'genre_scifi',
+                title: 'Sci-Fi',
+                description: 'Evaluate science fiction elements.',
+                criteria: ['Interest', 'Scientific Accuracy']
+            },
+            genre_horror: {
+                id: 'genre_horror',
+                title: 'Horror',
+                description: 'Evaluate horror elements and atmosphere.',
+                criteria: ['Atmosphere', 'Gore', 'Scares', 'Villain']
+            },
+            genre_mystery: {
+                id: 'genre_mystery',
+                title: 'Mystery',
+                description: 'Evaluate mystery construction and payoff.',
+                criteria: ['Clue Fairness', 'Conclusion', 'Red Herrings']
+            },
+            comp_genres: {
+                id: 'comp_genres',
+                title: 'Genre Specifics',
+                description: 'Select one or more genres to evaluate their unique tropes, or skip to finish.',
+                criteria: [] 
+            }
+        };
+
+        const criteriaDefinitions = {
+            'Characters': 'The fictional people or entities driving the narrative actions.',
+            'Enjoyment': 'The subjective measure of reader entertainment and satisfaction.',
+            'Plot & Narrative Structure': 'The sequential framework organizing a story’s events.',
+            'Production': 'The physical or digital formatting and manufacturing quality of a book.',
+            'Themes': 'The central underlying ideas or topics explored in the title.',
+            'World Building': 'The structural development of a story’s fictional setting and rules.',
+            'Writing': 'The technical execution of language and prose style.',
+            'Dialogue': 'The spoken communication between characters in the title.',
+            'Diction (Word Choice)': 'The specific vocabulary selected by the author.',
+            'Imagery & Sensory Detail': 'The textual descriptions of physical senses and environments.',
+            'Show vs. Tell': 'The stylistic choice between dramatic demonstration and direct exposition.',
+            'Syntax & Flow': 'The structural arrangement and rhythmic transition of sentences.',
+            'Voice & Tone': 'The stylistic narrative personality and attitude toward the subject.',
+            'Climax & Resolution': 'The peak narrative turning point and its subsequent outcome.',
+            'Conflict': 'The primary opposition or struggle driving the plot forward.',
+            'Conflict_Romance': 'The conflict preventing the main characters from their relationship (ie. age gap, enemies to lovers).',
+            'Pacing': 'The speed at which a narrative sequence unfolds.',
+            'Plot Twists': 'The unexpected structural shifts in a story\'s progression.',
+            'Subplots': 'The secondary narrative strands running parallel to the main plot.',
+            'The Hook': 'The opening narrative and/or premise designed to capture immediate reader attention.',
+            'Character Arc(s)': 'The chronological development and internal change of a character.',
+            'Character Depth': 'The psychological complexity and multi-dimensional traits given to a character.',
+            'Character Quality': 'The technical standard of character design and execution.',
+            'Relationship Dynamics': 'The behavioral patterns and interactions between two or more characters.',
+            'Amount of World Building': 'The quantitative scale and volume of background setting details provided.',
+            'Atmosphere': 'The mood or emotional tone established by a setting.',
+            'Atmosphere_Horror': 'The environmental conditions and emotional tone of a scene.',
+            'Consistency & Logic': 'The internal rule-adherence and causal coherence of a narrative.',
+            'Detail': 'The specific granular information regarding people, places, and events.',
+            'Lore Quality': 'The historical, cultural, and mythological depth of a fictional world.',
+            'Impact': 'The lasting intellectual or emotional impression of the theme left upon a reader.',
+            'Originality': 'The degree of unique variation from standard themes.',
+            'Quality': 'The execution and conveyance of the theme.',
+            'Anticipation': 'The level of excitement leading up to reading a title.',
+            'Experience': 'The overall emotional experience, separate from the quality of literary elements.',
+            'Unputdownability': 'The addictive nature of a title that discourages a reader from pausing.',
+            'Text Formatting': 'The visual layout, typography, and spacing of the printed or digital words.',
+            'Visuals': 'The illustrations, graphics, or design elements included in a book.',
+            'Narration': 'The structural method and perspective used to convey the story.',
+            'Sound Effects': 'The audio-production elements in an audiobook.',
+            'Chemistry': 'The degree of mutual attraction and behavioral compatibility between characters.',
+            'Steam': 'The explicit level of physical intimacy and sexual content described.',
+            'Scientific Accuracy': 'The degree of alignment between speculative elements and real-world scientific facts.',
+            'Interest': 'The baseline level of cognitive engagement a reader maintains with the material.',
+            'Scares': 'The specific narrative elements designed to induce fear or anxiety.',
+            'Gore': 'The explicit descriptions of physical bodily trauma and blood.',
+            'Villain': 'The primary antagonistic character opposing the protagonist.',
+            'Clue Fairness': 'The ease/achievability of deducing pieces needed to solve a mystery as a reader (that is, was it possible to solve the mystery oneself?).',
+            'Red Herrings': 'The deliberate narrative misdirections intended to divert investigation.',
+            'Conclusion': 'The final structural section resolving remaining plot lines.'
+        };
+
+        const iconMap = {
+            'comp': 'history_edu',
+            'quick': 'speed',
+            'characters': 'diversity_3',
+            'enjoyment': 'sentiment_very_satisfied',
+            'plot': 'timeline',
+            'production': 'adaptive_audio_mic',
+            'themes': 'eco',
+            'worldbuilding': 'globe',
+            'writing': 'stylus_note',
+            'genre': 'style',
+            'genre_romance': 'favorite',
+            'genre_scifi': 'rocket_launch',
+            'genre_horror': 'skull',
+            'genre_mystery': 'search',
+            
+            // Writing
+            'Dialogue': 'conversation',
+            'Diction (Word Choice)': 'dictionary',
+            'Imagery & Sensory Detail': 'image',
+            'Show vs. Tell': 'visibility',
+            'Syntax & Flow': 'conversion_path',
+            'Voice & Tone': 'voice_selection',
+            
+            // Characters
+            'Character Arc(s)': 'moving',
+            'Character Depth': 'shadow',
+            'Character Quality': 'diamond_shine',
+            'Relationship Dynamics': 'partner_heart',
+            
+            // World Building
+            'Amount of World Building': 'build',
+            'Atmosphere': 'mountain_steam',
+            'Atmosphere_Horror': 'thunderstorm',
+            'Consistency & Logic': 'sync',
+            'Detail': 'lens_blur',
+            'Lore Quality': 'diamond_shine',
+            
+            // Plot
+            'Climax & Resolution': 'mountain_flag',
+            'Conflict': 'swords',
+            'Conflict_Romance': 'sword_rose',
+            'Pacing': 'avg_pace',
+            'Plot Twists': 'turn_slight_left',
+            'Subplots': 'tenancy',
+            'The Hook': 'phishing',
+            
+            // Themes
+            'Impact': 'explosion',
+            'Originality': 'crown',
+            'Quality': 'diamond_shine',
+            
+            // Enjoyment
+            'Anticipation': 'hourglass_arrow_down',
+            'Experience': 'local_library',
+            'Unputdownability': 'pinboard',
+            
+            // Production
+            'Text Formatting': 'text_ad',
+            'Visuals': 'image',
+            'Narration': 'headphones',
+            'Sound Effects': 'graphic_eq',
+            
+            // Romance
+            'Chemistry': 'partner_heart',
+            'Steam': 'local_fire_department',
+            
+            // Sci-Fi
+            'Interest': 'interests',
+            'Scientific Accuracy': 'science',
+            
+            // Horror
+            'Gore': 'personal_injury',
+            'Scares': 'skull',
+            'Villain': 'gpp_bad',
+            
+            // Mystery
+            'Clue Fairness': 'mystery',
+            'Conclusion': 'hourglass_bottom',
+            'Red Herrings': 'set_meal'
+        };
+
+        const contentArea = document.getElementById('content-area');
+
+        function getSlug(text) {
+            return text.toString().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+        }
+
+        function getDefinition(criterion, raterId) {
+            let defKey = criterion;
+            if (criterion === 'Conflict' && (raterId === 'genre_romance' || appState.compSelectedGenres.includes('genre_romance'))) defKey = 'Conflict_Romance';
+            if (criterion === 'Atmosphere' && (raterId === 'genre_horror' || appState.compSelectedGenres.includes('genre_horror'))) defKey = 'Atmosphere_Horror';
+            return criteriaDefinitions[defKey] || 'Definition not found.';
+        }
+
+        function getIcon(criterion, raterId) {
+            let key = criterion;
+            if (criterion === 'Conflict' && (raterId === 'genre_romance' || appState.compSelectedGenres.includes('genre_romance'))) key = 'Conflict_Romance';
+            if (criterion === 'Atmosphere' && (raterId === 'genre_horror' || appState.compSelectedGenres.includes('genre_horror'))) key = 'Atmosphere_Horror';
+            return iconMap[key] || 'star'; 
+        }
+
+        function getCategoryIcon(catId) {
+            return iconMap[catId] || 'category';
+        }
+
+        const appState = {
+            activeRater: null,
+            ratings: {},
+            weights: {},
+            lockedWeights: {},
+            manualInputMode: false,
+            activeKeys: [],
+            settingsOpen: false,
+            standaloneScores: {}, 
+            compScores: {}, 
+            compSelectedGenres: [],
+            skipped: {}, 
+            productionMode: 'visual',
+            guidedFlow: false,
+            guidedIndex: 0,
+            guidedSequence: ['writing', 'characters', 'worldbuilding', 'plot', 'themes', 'enjoyment', 'production', 'comp_genres']
+        };
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function toggleSettings() {
+            appState.settingsOpen = !appState.settingsOpen;
+            const panel = document.getElementById('settings-panel');
+            if (appState.settingsOpen) {
+                panel.classList.remove('hidden');
+                updateWeightVisuals(); 
+            } else {
+                panel.classList.add('hidden');
+            }
+        }
+
+        function toggleInputMode() {
+            appState.manualInputMode = !appState.manualInputMode;
+            
+            const displayElements = document.querySelectorAll('.rating-display-mode');
+            const manualElements = document.querySelectorAll('.rating-manual-mode');
+            const toggleBg = document.getElementById('toggle-bg');
+            const toggleKnob = document.getElementById('toggle-knob');
+            const labelSlider = document.getElementById('toggle-label-slider');
+            const labelManual = document.getElementById('toggle-label-manual');
+            
+            if (appState.manualInputMode) {
+                displayElements.forEach(el => el.classList.add('hidden'));
+                manualElements.forEach(el => el.classList.remove('hidden'));
+                
+                if (toggleBg) {
+                    toggleBg.classList.remove('bg-gray-300', 'dark:bg-gray-600');
+                    toggleBg.classList.add('bg-gray-900', 'dark:bg-white');
+                    toggleKnob.classList.remove('translate-x-[4px]');
+                    toggleKnob.classList.add('translate-x-[22px]');
+                    toggleKnob.classList.remove('bg-white');
+                    toggleKnob.classList.add('bg-white', 'dark:bg-gray-900'); 
+                    labelSlider.classList.remove('text-gray-900', 'dark:text-white');
+                    labelSlider.classList.add('text-gray-400', 'dark:text-gray-500');
+                    labelManual.classList.remove('text-gray-400', 'dark:text-gray-500');
+                    labelManual.classList.add('text-gray-900', 'dark:text-white');
+                }
+            } else {
+                displayElements.forEach(el => el.classList.remove('hidden'));
+                manualElements.forEach(el => el.classList.add('hidden'));
+                
+                if (toggleBg) {
+                    toggleBg.classList.remove('bg-gray-900', 'dark:bg-white');
+                    toggleBg.classList.add('bg-gray-300', 'dark:bg-gray-600');
+                    toggleKnob.classList.remove('translate-x-[22px]');
+                    toggleKnob.classList.add('translate-x-[4px]');
+                    toggleKnob.classList.remove('dark:bg-gray-900');
+                    toggleKnob.classList.add('bg-white'); 
+                    labelSlider.classList.remove('text-gray-400', 'dark:text-gray-500');
+                    labelSlider.classList.add('text-gray-900', 'dark:text-white');
+                    labelManual.classList.remove('text-gray-900', 'dark:text-white');
+                    labelManual.classList.add('text-gray-400', 'dark:text-gray-500');
+                }
+                
+                appState.activeKeys.forEach(k => {
+                    let snapped = Math.round(appState.ratings[k] * 2) / 2;
+                    updateRating(k, snapped, 'import');
+                });
+            }
+        }
+
+        function toggleLock(key) {
+            appState.lockedWeights[key] = !appState.lockedWeights[key];
+            updateWeightVisuals();
+        }
+
+        function resetWeights() {
+            let evenShare = 100 / appState.activeKeys.filter(k => !appState.skipped[k]).length;
+            appState.activeKeys.forEach(k => {
+                if (!appState.skipped[k]) appState.weights[k] = evenShare;
+                else appState.weights[k] = 0;
+            });
+            appState.lockedWeights = {};
+            updateWeightVisuals();
+            updateAverageDisplay();
+        }
+
+        function handleWeightInput(key, value) {
+            let newValue = parseFloat(value);
+            let currentWeight = appState.weights[key];
+            
+            if (appState.lockedWeights[key]) return; 
+
+            let unlockedOtherKeys = appState.activeKeys.filter(k => k !== key && !appState.skipped[k] && !appState.lockedWeights[k]);
+            let lockedSum = appState.activeKeys.filter(k => k !== key && !appState.skipped[k] && appState.lockedWeights[k]).reduce((sum, k) => sum + appState.weights[k], 0);
+            
+            let maxAllowed = 100 - lockedSum;
+            if (newValue > maxAllowed) {
+                newValue = maxAllowed;
+            }
+
+            let delta = newValue - currentWeight;
+            if (delta === 0) return;
+
+            if (unlockedOtherKeys.length === 0) {
+                appState.weights[key] = currentWeight; 
+                updateWeightVisuals();
+                return;
+            }
+
+            let sumUnlockedOthers = unlockedOtherKeys.reduce((sum, k) => sum + appState.weights[k], 0);
+
+            if (delta > 0) {
+                let actualDelta = Math.min(delta, sumUnlockedOthers);
+                appState.weights[key] = currentWeight + actualDelta;
+                
+                if (sumUnlockedOthers <= 0.001) {
+                    let share = actualDelta / unlockedOtherKeys.length;
+                    unlockedOtherKeys.forEach(k => appState.weights[k] = Math.max(0, appState.weights[k] - share));
+                } else {
+                    unlockedOtherKeys.forEach(k => {
+                        let proportion = appState.weights[k] / sumUnlockedOthers;
+                        appState.weights[k] -= (actualDelta * proportion);
+                        if (appState.weights[k] < 0.001) appState.weights[k] = 0;
+                    });
+                }
+            } else {
+                appState.weights[key] = newValue;
+                let actualDelta = -delta; 
+                
+                if (sumUnlockedOthers <= 0.001) {
+                    let share = actualDelta / unlockedOtherKeys.length;
+                    unlockedOtherKeys.forEach(k => appState.weights[k] += share);
+                } else {
+                    unlockedOtherKeys.forEach(k => {
+                        let proportion = appState.weights[k] / sumUnlockedOthers;
+                        appState.weights[k] += (actualDelta * proportion);
+                    });
+                }
+            }
+            
+            let finalTotal = appState.activeKeys.filter(k => !appState.skipped[k]).reduce((sum, k) => sum + appState.weights[k], 0);
+            if (Math.abs(finalTotal - 100) > 0.001 && unlockedOtherKeys.length > 0) {
+                let correction = 100 - finalTotal;
+                let maxOtherKey = unlockedOtherKeys.reduce((a, b) => appState.weights[a] > appState.weights[b] ? a : b);
+                appState.weights[maxOtherKey] = Math.max(0, appState.weights[maxOtherKey] + correction);
+            }
+
+            updateWeightVisuals();
+            updateAverageDisplay();
+        }
+
+        function updateWeightVisuals() {
+            appState.activeKeys.forEach(k => {
+                let w = appState.weights[k] || 0;
+                
+                let warnIcon = document.getElementById(`weight-warn-${k}`);
+                if (warnIcon) {
+                    if (w <= 0.05 && !appState.skipped[k]) {
+                        w = 0; 
+                        warnIcon.classList.remove('hidden');
+                    } else {
+                        warnIcon.classList.add('hidden');
+                    }
+                }
+                
+                let input = document.getElementById(`weight-input-${k}`);
+                if (input) input.value = w;
+                
+                let thumb = document.getElementById(`weight-thumb-${k}`);
+                if (thumb) thumb.style.left = `${w}%`;
+
+                let fill = document.getElementById(`weight-fill-${k}`);
+                if (fill) fill.style.width = `${w}%`;
+
+                let textVal = document.getElementById(`weight-val-${k}`);
+                if (textVal) textVal.innerText = w.toFixed(1) + '%';
+
+                let isLocked = appState.lockedWeights[k];
+                let lockPath = document.getElementById(`lock-path-${k}`);
+                let lockBtn = document.getElementById(`lock-btn-${k}`);
+                
+                if (isLocked) {
+                    if (input) {
+                        input.disabled = true;
+                        input.classList.remove('cursor-pointer');
+                        input.classList.add('cursor-not-allowed');
+                    }
+                    if (thumb) {
+                        thumb.classList.remove('border-gray-900', 'dark:border-gray-800');
+                        thumb.classList.add('border-gray-400', 'dark:border-gray-500', 'bg-gray-200', 'dark:bg-gray-600');
+                    }
+                    if (fill) {
+                        fill.classList.remove('bg-gray-400', 'dark:bg-gray-500');
+                        fill.classList.add('bg-gray-300', 'dark:bg-gray-600');
+                    }
+                    if (lockPath) lockPath.setAttribute('d', 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z');
+                    if (lockBtn) {
+                        lockBtn.classList.add('text-gray-900', 'dark:text-white', 'bg-gray-200', 'dark:bg-gray-700');
+                        lockBtn.classList.remove('text-gray-400');
+                    }
+                } else {
+                    if (input) {
+                        input.disabled = false;
+                        input.classList.add('cursor-pointer');
+                        input.classList.remove('cursor-not-allowed');
+                    }
+                    if (thumb) {
+                        thumb.classList.add('border-gray-900', 'dark:border-gray-800');
+                        thumb.classList.remove('border-gray-400', 'dark:border-gray-500', 'bg-gray-200', 'dark:bg-gray-600');
+                    }
+                    if (fill) {
+                        fill.classList.add('bg-gray-400', 'dark:bg-gray-500');
+                        fill.classList.remove('bg-gray-300', 'dark:bg-gray-600');
+                    }
+                    if (lockPath) lockPath.setAttribute('d', 'M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z');
+                    if (lockBtn) {
+                        lockBtn.classList.remove('text-gray-900', 'dark:text-white', 'bg-gray-200', 'dark:bg-gray-700');
+                        lockBtn.classList.add('text-gray-400');
+                    }
+                }
+            });
+        }
+
+        function updateRating(key, value, source) {
+            let numVal = parseFloat(value);
+            if (isNaN(numVal)) numVal = 0;
+            
+            if (numVal < 0) numVal = 0;
+            if (numVal > 5) numVal = 5;
+
+            if (source === 'slider' || (source === 'import' && !appState.manualInputMode)) {
+                numVal = Math.round(numVal * 2) / 2;
+            }
+
+            appState.ratings[key] = numVal;
+
+            const valDisplay = document.getElementById(`rating-val-${key}`);
+            if (valDisplay) valDisplay.innerText = numVal.toFixed(1);
+
+            const manualInput = document.getElementById(`rating-input-${key}`);
+            if (manualInput && source !== 'input') manualInput.value = numVal;
+
+            const sliderInput = document.getElementById(`rating-slider-${key}`);
+            if (sliderInput && source !== 'slider') sliderInput.value = numVal;
+
+            updateAverageDisplay();
+        }
+
+        function updateAverageDisplay() {
+            let totalWeight = 0;
+            let weightedSum = 0;
+
+            appState.activeKeys.forEach(k => {
+                if (!appState.skipped[k]) {
+                    const w = appState.weights[k];
+                    const r = appState.ratings[k];
+                    totalWeight += w;
+                    weightedSum += (r * w);
+                }
+            });
+
+            const avg = totalWeight === 0 ? 0 : weightedSum / totalWeight;
+            const avgDisplay = document.getElementById('overall-average');
+            if (avgDisplay) {
+                avgDisplay.innerText = avg.toFixed(2);
+            }
+            
+            const starsContainer = document.getElementById('vertical-stars');
+            if (starsContainer) {
+                let starsHTML = '';
+                for (let i = 1; i <= 5; i++) {
+                    let fillPercent = 0;
+                    if (avg >= i) fillPercent = 100;
+                    else if (avg >= i - 1) fillPercent = (avg - (i - 1)) * 100;
+                    
+                    starsHTML += `
+                        <div class="relative w-4 h-4 sm:w-5 sm:h-5 mx-[1px] flex-shrink-0">
+                            <svg class="absolute inset-0 w-full h-full text-gray-200 dark:text-gray-800 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            <div class="absolute bottom-0 left-0 w-full overflow-hidden transition-all duration-300 ease-out" style="height: ${fillPercent}%;">
+                                <svg class="absolute bottom-0 left-0 w-4 h-4 sm:w-5 sm:h-5 text-gray-900 dark:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    `;
+                }
+                starsContainer.innerHTML = starsHTML;
+            }
+        }
+
+        function startGuidedFlow() {
+            appState.guidedFlow = true;
+            appState.guidedIndex = 0;
+            navigateTo(appState.guidedSequence[0]);
+        }
+
+        function resetRater(key, event, isComp = false) {
+            event.stopPropagation(); 
+            if (isComp) {
+                appState.compScores = {};
+                appState.compSelectedGenres = [];
+            } else {
+                delete appState.standaloneScores[key];
+            }
+            if (key && key.startsWith('genre_')) renderGenreMenu(true);
+            else renderHome(true);
+        }
+
+        function toggleSkip(key) {
+            appState.skipped[key] = !appState.skipped[key];
+            
+            if (appState.skipped[key]) {
+                delete appState.lockedWeights[key];
+                let w = appState.weights[key] || 0;
+                appState.weights[key] = 0;
+                
+                const remainingKeys = appState.activeKeys.filter(k => k !== key && !appState.skipped[k]);
+                if (w > 0 && remainingKeys.length > 0) {
+                     let othersSum = remainingKeys.reduce((sum, k) => sum + appState.weights[k], 0);
+                     if (othersSum > 0) {
+                         remainingKeys.forEach(k => appState.weights[k] += w * (appState.weights[k] / othersSum));
+                     } else {
+                         let share = w / remainingKeys.length;
+                         remainingKeys.forEach(k => appState.weights[k] = share);
+                     }
+                }
+            } else {
+                resetWeights();
+            }
+            renderRater(appState.activeRater, true);
+        }
+
+        function setProductionMode(mode) {
+            if (appState.productionMode === mode) return;
+            appState.productionMode = mode;
+            renderRater('production', true);
+            resetWeights();
+        }
+
+        function toggleCompGenre(genreId) {
+            const idx = appState.compSelectedGenres.indexOf(genreId);
+            if (idx > -1) appState.compSelectedGenres.splice(idx, 1);
+            else appState.compSelectedGenres.push(genreId);
+            renderRater('comp_genres', true);
+            resetWeights();
+        }
+
+        function saveRating(e = window.event) {
+            let totalWeight = 0;
+            let weightedSum = 0;
+            appState.activeKeys.forEach(k => {
+                if (!appState.skipped[k]) {
+                    totalWeight += appState.weights[k];
+                    weightedSum += (appState.ratings[k] * appState.weights[k]);
+                }
+            });
+            const avg = totalWeight === 0 ? 0 : weightedSum / totalWeight;
+            
+            let targetView = 'home';
+            if (appState.guidedFlow) {
+                if (appState.activeRater !== 'comp_genres' || appState.activeKeys.length > 0) {
+                    appState.compScores[appState.activeRater] = avg;
+                } else {
+                    delete appState.compScores['comp_genres'];
+                }
+
+                appState.guidedIndex++;
+                if (appState.guidedIndex < appState.guidedSequence.length) {
+                    targetView = appState.guidedSequence[appState.guidedIndex];
+                } else {
+                    appState.guidedFlow = false;
+                }
+            } else {
+                appState.standaloneScores[appState.activeRater] = avg;
+            }
+
+            const btn = e ? (e.currentTarget || e.target) : document.activeElement;
+            
+            if (btn && btn.innerHTML) {
+                const originalText = btn.innerHTML;
+                btn.innerHTML = `<span class="flex items-center justify-center"><svg class="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Saving...</span>`;
+                btn.disabled = true;
+                btn.classList.add('opacity-80');
+
+                setTimeout(() => {
+                    btn.innerHTML = `<span class="flex items-center justify-center"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Saved</span>`;
+                    btn.classList.remove('bg-gray-900', 'dark:bg-white', 'hover:bg-black', 'dark:hover:bg-gray-200');
+                    btn.classList.add('bg-green-600', 'text-white', 'hover:bg-green-700', 'dark:bg-green-700', 'dark:text-white', 'dark:hover:bg-green-600');
+                    
+                    setTimeout(() => navigateTo(targetView), 500);
+                }, 400);
+            } else {
+                navigateTo(targetView);
+            }
+        }
+
+        function renderHome(skipAnimation = false) {
+            appState.guidedFlow = false; 
+
+            const compKeys = appState.guidedSequence.filter(k => k !== 'comp_genres');
+            const compScoresArr = compKeys.map(k => appState.compScores[k]).filter(s => s !== undefined);
+            const hasAllComp = compScoresArr.length === compKeys.length && compKeys.length > 0;
+            
+            let compAvg = null;
+            if (hasAllComp) {
+                let allScores = [...compScoresArr];
+                if (appState.compScores['comp_genres'] !== undefined) {
+                    allScores.push(appState.compScores['comp_genres']);
+                }
+                compAvg = (allScores.reduce((a,b)=>a+b,0) / allScores.length).toFixed(2);
+            }
+
+            const quickScore = appState.standaloneScores['quick'];
+            const hasQuickScore = quickScore !== undefined;
+
+            const html = `
+                <div class="flex flex-col items-center w-full max-w-4xl mx-auto space-y-4">
+                    
+                    <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 items-stretch">
+                        <!-- Comprehensive Button -->
+                        <div class="relative group h-full">
+                            <button onclick="startGuidedFlow()" class="h-full w-full flex flex-col items-center justify-center py-8 px-6 bg-gray-900 dark:bg-gray-900 text-white dark:text-white rounded-2xl hover:bg-black dark:hover:bg-gray-800 transition-all duration-300 shadow-sm border ${hasAllComp ? 'border-green-500 bg-green-900 hover:bg-green-800' : 'border-gray-800'} group transform hover:-translate-y-1 hover:shadow-xl">
+                                <span class="text-xl sm:text-2xl font-medium tracking-wide mb-2 flex items-center text-center">
+                                    <span class="material-symbols-outlined mr-3 text-[28px] ${hasAllComp ? 'text-green-400' : 'text-gray-400'}">${getCategoryIcon('comp')}</span>
+                                    Comprehensive Book Rater
+                                </span>
+                                <span class="${hasAllComp ? 'text-green-200' : 'text-gray-300'} text-xs sm:text-sm font-light text-center">
+                                    ${hasAllComp ? `Completed - Score: <span class="font-bold text-white">${compAvg}</span>` : 'The complete evaluation tool'}
+                                </span>
+                            </button>
+                            ${hasAllComp ? `
+                            <button onclick="resetRater('comp', event, true)" class="absolute top-4 right-4 p-1.5 text-gray-300 hover:text-white bg-gray-800/50 hover:bg-red-500/80 rounded-full transition-all z-10 shadow-sm border border-gray-700" title="Reset comprehensive score">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            </button>
+                            ` : ''}
+                        </div>
+
+                        <!-- Quick Rate Button -->
+                        <div class="relative group h-full">
+                            <button onclick="navigateTo('quick')" class="h-full w-full flex flex-col items-center justify-center py-8 px-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 shadow-sm border ${hasQuickScore ? 'border-green-300 dark:border-green-800 bg-green-50/50 dark:bg-green-900/40' : 'border-gray-200 dark:border-gray-800'} group transform hover:-translate-y-1 hover:shadow-xl">
+                                <span class="text-xl sm:text-2xl font-medium tracking-wide mb-2 flex items-center text-center">
+                                    <span class="material-symbols-outlined mr-3 text-[28px] ${hasQuickScore ? 'text-green-500' : 'text-gray-400 dark:text-gray-500'}">${getCategoryIcon('quick')}</span>
+                                    Quick Rate
+                                </span>
+                                <span class="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-light text-center">
+                                    ${hasQuickScore ? `Completed - Score: <span class="font-bold text-gray-900 dark:text-white">${quickScore.toFixed(2)}</span>` : ratersData.quick.description}
+                                </span>
+                            </button>
+                            ${hasQuickScore ? `
+                            <button onclick="resetRater('quick', event)" class="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-red-600 dark:text-gray-500 dark:hover:text-red-400 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-all z-10 shadow-sm border border-gray-100 dark:border-gray-700" title="Reset quick score">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            </button>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="flex items-center w-full max-w-sm mx-auto mb-8 pt-2">
+                        <div class="flex-grow h-px bg-gray-200 dark:bg-gray-800"></div>
+                        <span class="px-4 text-xs tracking-widest text-gray-400 dark:text-gray-600 uppercase font-medium">Or rate by category</span>
+                        <div class="flex-grow h-px bg-gray-200 dark:bg-gray-800"></div>
+                    </div>
+
+                    <!-- Independent Categories -->
+                    <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+                        ${Object.keys(ratersData)
+                            .filter(key => key !== 'quick' && key !== 'comp_genres' && !key.startsWith('genre_'))
+                            .sort((a, b) => ratersData[a].title.localeCompare(ratersData[b].title))
+                            .map((key, index) => {
+                            const hasScore = appState.standaloneScores[key] !== undefined;
+                            const scoreDisplay = hasScore ? appState.standaloneScores[key].toFixed(2) : '';
+                            const animStyle = skipAnimation ? 'opacity: 1; transform: none;' : `animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${0.1 * (index + 1)}s forwards; opacity: 0; transform: translateY(10px);`;
+                            
+                            return `
+                            <div class="relative group h-full" style="${animStyle}">
+                                <button onclick="navigateTo('${key}')" class="h-full w-full flex flex-col items-start p-6 bg-white dark:bg-gray-900 border ${hasScore ? 'border-green-300 dark:border-green-800 bg-green-50/30 dark:bg-green-900/40' : 'border-gray-200 dark:border-gray-800'} rounded-xl hover:border-gray-900 dark:hover:border-gray-700 hover:shadow-md transition-all duration-200 text-left">
+                                    <div class="flex justify-between items-center w-full mb-1">
+                                        <span class="text-gray-900 dark:text-white font-medium transition-colors flex items-center">
+                                            <span class="material-symbols-outlined mr-2 text-[20px] ${hasScore ? 'text-green-500' : 'text-gray-400 dark:text-gray-500'}">${getCategoryIcon(key)}</span>
+                                            ${ratersData[key].title}
+                                        </span>
+                                        ${hasScore ? `<span class="text-xs font-bold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/60 px-2 py-0.5 rounded-full">${scoreDisplay}</span>` : ''}
+                                    </div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400 font-light line-clamp-2 pr-8 mt-1">${ratersData[key].description}</span>
+                                </button>
+                                ${hasScore ? `
+                                <button onclick="resetRater('${key}', event)" class="absolute bottom-4 right-4 p-1.5 text-gray-400 hover:text-red-600 dark:text-gray-500 dark:hover:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/40 rounded-full border border-gray-100 dark:border-gray-700 hover:border-red-200 dark:hover:border-red-800 shadow-sm transition-all z-10" title="Reset score">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                </button>
+                                ` : ''}
+                            </div>
+                        `}).join('')}
+                    </div>
+                </div>
+            `;
+            setContent(html, null, skipAnimation);
+        }
+
+        function renderGenreMenu(skipAnimation = false) {
+            const genres = [
+                { id: 'genre_romance', title: 'Romance', desc: 'Chemistry, Steam, Conflict' },
+                { id: 'genre_scifi', title: 'Sci-Fi', desc: 'Scientific Plausibility, Interest' },
+                { id: 'genre_horror', title: 'Horror', desc: 'Atmosphere, Scares, Gore, The Enemy' },
+                { id: 'genre_mystery', title: 'Mystery', desc: 'Clue Fairness, Red Herrings, Conclusion' }
+            ];
+
+            const inGuidedFlow = appState.guidedFlow;
+
+            const html = `
+                <div class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 sm:p-10 shadow-sm fade-enter">
+                    <div class="flex flex-col items-start mb-10 border-b border-gray-100 dark:border-gray-800 pb-8">
+                        <div class="w-full flex justify-between items-center mb-6">
+                            <button onclick="${inGuidedFlow ? 'saveRating(event)' : "navigateTo('home')"}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center group">
+                                ${inGuidedFlow ? 
+                                    `Skip Genres & Finish <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>` : 
+                                    `<svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> Back to menu`
+                                }
+                            </button>
+                            ${inGuidedFlow ? `<span class="text-xs font-semibold text-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-800">Final Step</span>` : ''}
+                        </div>
+                        <h2 class="text-2xl font-medium text-gray-900 dark:text-white mb-2">Genre Specifics</h2>
+                        <p class="text-gray-500 dark:text-gray-400 font-light text-sm">Select the primary genre of the book to evaluate its specific tropes.</p>
+                    </div>
+
+                    <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                        ${genres.map((g, index) => {
+                            const hasScore = appState.standaloneScores[g.id] !== undefined;
+                            const scoreDisplay = hasScore ? appState.standaloneScores[g.id].toFixed(2) : '';
+                            const animStyle = skipAnimation ? 'opacity: 1; transform: none;' : `animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${0.1 * (index + 1)}s forwards; opacity: 0; transform: translateY(10px);`;
+
+                            return `
+                            <div class="relative group" style="${animStyle}">
+                                <button onclick="navigateTo('${g.id}')" class="w-full flex flex-col items-start p-6 bg-gray-50 dark:bg-gray-800 border ${hasScore ? 'border-green-300 dark:border-green-800 bg-green-50/40 dark:bg-green-900/40' : 'border-gray-200 dark:border-gray-700'} rounded-xl hover:border-gray-900 dark:hover:border-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all duration-200 text-left">
+                                    <div class="flex justify-between items-center w-full mb-1">
+                                        <span class="text-gray-900 dark:text-white font-medium transition-colors flex items-center">
+                                            <span class="material-symbols-outlined text-[18px] ${hasScore ? 'text-green-500' : 'text-gray-400 dark:text-gray-500'} mr-2">${hasScore ? 'check_circle' : getCategoryIcon(g.id)}</span>
+                                            ${g.title}
+                                        </span>
+                                        ${hasScore ? `<span class="text-xs font-bold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/60 px-2 py-0.5 rounded-full">${scoreDisplay}</span>` : ''}
+                                    </div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400 font-light line-clamp-2 pr-8 mt-1">${g.desc}</span>
+                                </button>
+                            </div>
+                        `}).join('')}
+                    </div>
+                </div>
+            `;
+            setContent(html, null, skipAnimation);
+        }
+
+        function renderRater(raterId, skipAnimation = false) {
+            const data = ratersData[raterId];
+            if (!data) return renderHome();
+
+            const isQuick = raterId === 'quick';
+
+            if (appState.activeRater !== raterId) {
+                appState.activeRater = raterId;
+                appState.ratings = {};
+                appState.weights = {};
+                appState.lockedWeights = {};
+                appState.manualInputMode = false;
+                appState.settingsOpen = false;
+                appState.skipped = {};
+                appState.productionMode = 'visual';
+            }
+
+            let currentCriteria = [];
+            let groupedCriteria = [];
+
+            if (raterId === 'production') {
+                currentCriteria = appState.productionMode === 'audio' ? ['Narration', 'Sound Effects'] : ['Text Formatting', 'Visuals'];
+                groupedCriteria = [{ groupName: '', criteria: currentCriteria }];
+            } else if (raterId === 'comp_genres') {
+                appState.compSelectedGenres.forEach(gId => {
+                    let gTitle = ratersData[gId].title;
+                    groupedCriteria.push({
+                        groupName: gTitle,
+                        criteria: [...ratersData[gId].criteria].sort()
+                    });
+                    currentCriteria = currentCriteria.concat(ratersData[gId].criteria);
+                });
+                groupedCriteria.sort((a,b) => a.groupName.localeCompare(b.groupName));
+            } else {
+                currentCriteria = [...data.criteria];
+                groupedCriteria = [{ groupName: '', criteria: currentCriteria }];
+            }
+                
+            appState.activeKeys = currentCriteria.map(getSlug);
+            let unskippedKeys = appState.activeKeys.filter(k => !appState.skipped[k]);
+            let hasExistingWeights = unskippedKeys.some(k => appState.weights[k] !== undefined);
+            
+            appState.activeKeys.forEach(key => {
+                if (appState.ratings[key] === undefined) appState.ratings[key] = 2.5;
+                if (appState.weights[key] === undefined) {
+                    appState.weights[key] = hasExistingWeights || appState.skipped[key] ? 0 : (100 / unskippedKeys.length);
+                }
+            });
+
+            const backTarget = raterId.startsWith('genre_') ? 'genre' : 'home';
+            const backText = raterId.startsWith('genre_') ? 'Back to genres' : (appState.guidedFlow ? 'Cancel & Return' : 'Back to menu');
+
+            let saveBtnText = "Save Assessment";
+            if (appState.guidedFlow) {
+                let nextIndex = appState.guidedIndex + 1;
+                if (nextIndex < appState.guidedSequence.length) {
+                    let nextKey = appState.guidedSequence[nextIndex];
+                    let nextName = nextKey === 'comp_genres' ? 'Genre Specifics' : ratersData[nextKey].title;
+                    saveBtnText = `Save & Next (${nextName})`;
+                } else {
+                    saveBtnText = "Finish Comprehensive Rating";
+                }
+            }
+
+            let notchesHTML = `<div class="relative h-4 mt-1 mx-[8px] pointer-events-none">`;
+            for (let i = 0; i <= 5; i += 0.5) {
+                let leftPercent = (i / 5) * 100;
+                if (i % 1 === 0) {
+                    notchesHTML += `<div class="absolute flex flex-col items-center" style="left: ${leftPercent}%; transform: translateX(-50%);"><div class="w-[2px] h-2 bg-gray-400 dark:bg-gray-500 rounded-full mb-0.5"></div><span class="text-[10px] font-bold text-gray-900 dark:text-white leading-none">${i}</span></div>`;
+                } else {
+                    notchesHTML += `<div class="absolute flex flex-col items-center" style="left: ${leftPercent}%; transform: translateX(-50%); top: 1px;"><div class="w-[1px] h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full"></div></div>`;
+                }
+            }
+            notchesHTML += `</div>`;
+
+            const html = `
+                <div class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 sm:p-10 shadow-sm ${skipAnimation ? '' : 'fade-enter'} relative">
+                    
+                    ${appState.guidedFlow ? `
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-100 dark:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 px-4 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase shadow-sm flex items-center z-50">
+                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-2 animate-pulse"></span>
+                        Guided Flow: Step ${appState.guidedIndex + 1} of ${appState.guidedSequence.length}
+                    </div>
+                    ` : ''}
+
+                    <div class="flex flex-col items-start mb-8 border-b border-gray-100 dark:border-gray-800 pb-8 w-full mt-2">
+                        <button onclick="${appState.guidedFlow ? `appState.guidedFlow = false; navigateTo('home')` : `navigateTo('${backTarget}')`}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center mb-6 group">
+                            <svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            ${backText}
+                        </button>
+                        
+                        <div class="flex justify-between items-start w-full">
+                            <div class="pr-4 flex items-start">
+                                <span class="material-symbols-outlined text-gray-400 dark:text-gray-500 mr-3 mt-1 text-[28px]">${getCategoryIcon(raterId === 'comp_genres' ? 'comp' : raterId)}</span>
+                                <div>
+                                    <h2 class="text-2xl font-medium text-gray-900 dark:text-white mb-2">${data.title}</h2>
+                                    <p class="text-gray-500 dark:text-gray-400 font-light text-sm">${data.description}</p>
+                                </div>
+                            </div>
+                            
+                            ${(raterId === 'comp_genres' && currentCriteria.length === 0) ? '' : `
+                            <div class="flex flex-col items-end shrink-0">
+                                <div class="flex items-center mb-1">
+                                    <span class="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wider">Average</span>
+                                    <button onclick="toggleSettings()" class="ml-2 p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors" title="Adjust Weights">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    </button>
+                                </div>
+                                <span id="overall-average" class="text-3xl font-light text-gray-900 dark:text-white mb-1">2.50</span>
+                                <div id="vertical-stars" class="flex items-center">
+                                    <!-- Stars injected here -->
+                                </div>
+                            </div>
+                            `}
+                        </div>
+                    </div>
+
+                    ${raterId === 'comp_genres' ? `
+                    <div class="mb-8 p-5 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 w-full shadow-inner">
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-4 uppercase tracking-wider">Select Genres to Evaluate</p>
+                        <div class="flex flex-wrap gap-2.5">
+                            ${[
+                                { id: 'genre_romance', label: 'Romance' },
+                                { id: 'genre_scifi', label: 'Sci-Fi' },
+                                { id: 'genre_horror', label: 'Horror' },
+                                { id: 'genre_mystery', label: 'Mystery' }
+                            ].map(g => {
+                                const isSel = appState.compSelectedGenres.includes(g.id);
+                                return `
+                                    <button onclick="toggleCompGenre('${g.id}')" class="flex items-center px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border ${isSel ? 'bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900 dark:border-white shadow-md transform scale-105' : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 dark:hover:border-gray-500'}">
+                                        <span class="material-symbols-outlined mr-2 text-[18px] ${isSel ? 'text-white dark:text-gray-900' : 'text-gray-500 dark:text-gray-400'}">${getCategoryIcon(g.id)}</span>
+                                        ${g.label}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <div id="settings-panel" class="hidden mb-10 p-5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Advanced Weighting</h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed pr-4">
+                                    Distribute exactly 100%. Adjusting one proportionally affects unlocked others.
+                                </p>
+                            </div>
+                            <button onclick="resetWeights()" class="shrink-0 flex items-center px-3 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-md transition-colors" title="Reset Weights">
+                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                Reset
+                            </button>
+                        </div>
+                        <div class="space-y-5 relative">
+                            ${currentCriteria.filter(crit => !appState.skipped[getSlug(crit)]).map(criterion => {
+                                const key = getSlug(criterion);
+                                return `
+                                <div class="flex items-center justify-between">
+                                    <div class="w-1/4 flex items-center pr-2">
+                                        <span class="material-symbols-outlined mr-1.5 text-[14px] text-gray-400 dark:text-gray-500">${getIcon(criterion, raterId)}</span>
+                                        <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate" title="${criterion}">${criterion}</span>
+                                        <div id="weight-warn-${key}" class="hidden relative ml-1 flex items-center group">
+                                            <svg class="w-3.5 h-3.5 text-red-400 flex-shrink-0 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            <div class="opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[10px] leading-relaxed p-2.5 rounded shadow-md z-50 pointer-events-none text-center">
+                                                This attribute has a weight of 0 and will not impact the final score.
+                                                <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow relative h-6 flex items-center group mx-2 sm:mx-4">
+                                        <div class="absolute w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full pointer-events-none"></div>
+                                        <div id="weight-fill-${key}" class="absolute h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full pointer-events-none" style="width: ${appState.weights[key]}%"></div>
+                                        <input type="range" id="weight-input-${key}" min="0" max="100" step="0.5" value="${appState.weights[key]}" 
+                                            oninput="handleWeightInput('${key}', this.value)"
+                                            class="absolute w-full h-full opacity-0 cursor-pointer m-0 z-20">
+                                        <div id="weight-thumb-${key}" class="absolute w-4 h-4 bg-white dark:bg-gray-200 border-2 border-gray-900 dark:border-gray-800 rounded-full shadow-sm pointer-events-none z-30 group-hover:scale-110 transition-transform duration-150" style="left: ${appState.weights[key]}%; transform: translateX(-50%)"></div>
+                                    </div>
+                                    <div class="w-20 flex justify-end items-center">
+                                        <span class="text-xs font-semibold text-gray-900 dark:text-white mr-1.5" id="weight-val-${key}">${appState.weights[key].toFixed(1)}%</span>
+                                        <button onclick="toggleLock('${key}')" id="lock-btn-${key}" class="p-1 rounded text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Lock weight">
+                                            <svg id="lock-icon-${key}" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path id="lock-path-${key}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    ${raterId === 'production' ? `
+                        <div class="mb-8 p-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl flex w-full max-w-sm mx-auto shadow-inner">
+                            <button onclick="setProductionMode('visual')" class="flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 ${appState.productionMode === 'visual' ? 'bg-white dark:bg-gray-700 shadow text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}">Print / E-Book</button>
+                            <button onclick="setProductionMode('audio')" class="flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200 ${appState.productionMode === 'audio' ? 'bg-white dark:bg-gray-700 shadow text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}">Audiobook</button>
+                        </div>
+                    ` : ''}
+
+                    ${isQuick ? `
+                    <div class="flex justify-end items-center mb-6 -mt-2">
+                        <div class="flex items-center cursor-pointer group" onclick="toggleInputMode()">
+                            <span id="toggle-label-slider" class="text-xs font-medium transition-colors duration-200 ${appState.manualInputMode ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'}">Sliders</span>
+                            <div id="toggle-bg" class="relative mx-3 inline-flex h-5 w-10 items-center rounded-full transition-colors duration-300 ${appState.manualInputMode ? 'bg-gray-900 dark:bg-white' : 'bg-gray-300 dark:bg-gray-600'} shadow-inner">
+                                <span id="toggle-knob" class="inline-block h-3.5 w-3.5 rounded-full ${appState.manualInputMode ? 'bg-white dark:bg-gray-900' : 'bg-white'} shadow-sm transition-transform duration-300 ${appState.manualInputMode ? 'translate-x-[22px]' : 'translate-x-[4px]'}"></span>
+                            </div>
+                            <span id="toggle-label-manual" class="text-xs font-medium transition-colors duration-200 ${appState.manualInputMode ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'}">Precision Input</span>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    ${(raterId === 'comp_genres' && currentCriteria.length === 0) ? `
+                        <div class="py-12 text-center text-gray-400 dark:text-gray-500 text-sm font-light italic bg-gray-50/50 dark:bg-gray-800/30 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 mb-8">
+                            No genres selected.<br>Click finish below to calculate your final score without genre specifics.
+                        </div>
+                    ` : `
+                        ${groupedCriteria.map(group => `
+                            ${groupedCriteria.length > 1 ? `
+                                <div class="w-full flex items-center mt-6 mb-6">
+                                    <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-white mr-4">${group.groupName}</h3>
+                                    <div class="flex-grow h-px bg-gray-200 dark:bg-gray-800"></div>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="space-y-8 ${groupedCriteria.length > 1 ? 'mb-10 pl-2 border-l-2 border-gray-100 dark:border-gray-800' : 'mb-10'}">
+                                ${group.criteria.map(criterion => {
+                                    const key = getSlug(criterion);
+                                    const isSkipped = appState.skipped[key];
+
+                                    return `
+                                    <div class="flex flex-col">
+                                        <div class="flex justify-between items-end mb-3">
+                                            <div class="flex items-center flex-wrap gap-y-2">
+                                                <div class="flex items-center relative z-40">
+                                                    <span class="material-symbols-outlined mr-2 text-[18px] transition-colors ${isSkipped ? 'text-gray-300 dark:text-gray-700' : 'text-gray-400 dark:text-gray-500'}">${getIcon(criterion, raterId)}</span>
+                                                    <label class="text-sm font-medium transition-colors ${isSkipped ? 'text-gray-400 dark:text-gray-600 line-through' : 'text-gray-700 dark:text-gray-200'}">${criterion}</label>
+                                                    <div class="relative ml-1.5 flex items-center group">
+                                                        <svg class="w-3.5 h-3.5 transition-colors ${isSkipped ? 'text-gray-300 dark:text-gray-600' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'} cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                        <div class="opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[10px] leading-relaxed p-2.5 rounded shadow-md pointer-events-none text-center z-50">
+                                                            ${getDefinition(criterion, raterId)}
+                                                            <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
+                                                        </div>
+                                                    </div>
+                                                    <button onclick="toggleSkip('${key}')" class="ml-3 text-[9px] uppercase font-bold px-1.5 py-0.5 rounded transition-colors ${isSkipped ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600' : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300'}">
+                                                        ${isSkipped ? 'Include' : 'Skip'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex items-center justify-end transition-opacity duration-300 ${isSkipped ? 'opacity-30 grayscale pointer-events-none' : ''}">
+                                                <span class="text-xs font-semibold text-gray-900 dark:text-white w-8 text-right rating-display-mode ${isQuick && appState.manualInputMode ? 'hidden' : ''}" id="rating-val-${key}">${appState.ratings[key].toFixed(1)}</span>
+                                                ${isQuick ? `
+                                                <div class="rating-manual-mode ${appState.manualInputMode ? '' : 'hidden'} flex items-center">
+                                                    <input type="number" min="0" max="5" step="0.001" value="${appState.ratings[key]}" 
+                                                        oninput="updateRating('${key}', this.value, 'input')"
+                                                        id="rating-input-${key}"
+                                                        class="text-xs font-semibold text-gray-900 dark:text-white w-16 text-right border-b-2 border-gray-200 dark:border-gray-700 focus:outline-none focus:border-gray-900 dark:focus:border-white bg-transparent px-1 pb-0.5 transition-colors">
+                                                    <span class="text-[10px] text-gray-400 dark:text-gray-500 ml-1">/ 5.000</span>
+                                                </div>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                        <div class="relative w-full transition-opacity duration-300 ${isSkipped ? 'opacity-30 grayscale pointer-events-none' : ''} rating-display-mode ${isQuick && appState.manualInputMode ? 'hidden' : ''}">
+                                            <input type="range" id="rating-slider-${key}" min="0" max="5" step="0.5" value="${appState.ratings[key]}" 
+                                                oninput="updateRating('${key}', this.value, 'slider')"
+                                                class="w-full relative z-10">
+                                            ${notchesHTML}
+                                        </div>
+                                    </div>
+                                `}).join('')}
+                            </div>
+                        `).join('')}
+                    `}
+
+                    <div class="flex justify-between items-center pt-6 border-t border-gray-100 dark:border-gray-800">
+                        ${appState.guidedFlow ? `
+                            <button onclick="appState.guidedFlow = false; navigateTo('home')" class="text-sm font-medium text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Save & Exit Flow</button>
+                        ` : `<div></div>`}
+                        <button onclick="saveRating(event)" class="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-black dark:hover:bg-gray-200 transition-colors shadow-sm">
+                            ${saveBtnText}
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            setContent(html, () => {
+                if (appState.settingsOpen) updateWeightVisuals();
+                updateAverageDisplay();
+            }, skipAnimation);
+        }
+
+        function setContent(html, callback, skipAnimation = false) {
+            if (skipAnimation) {
+                contentArea.innerHTML = html;
+                if (callback) callback();
+                return;
+            }
+
+            contentArea.style.opacity = '0';
+            contentArea.style.transform = 'translateY(5px)';
+            setTimeout(() => {
+                contentArea.innerHTML = html;
+                contentArea.style.transition = 'none';
+                void contentArea.offsetWidth; 
+                contentArea.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                contentArea.style.opacity = '1';
+                contentArea.style.transform = 'translateY(0)';
+                if (callback) callback();
+            }, 150);
+        }
+
+        function navigateTo(view) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (view === 'home') renderHome();
+            else if (view === 'genre') renderGenreMenu();
+            else renderRater(view);
+        }
+
+        window.onload = () => {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+            renderHome();
+        };
+    </script>
+</body>
+</html>
