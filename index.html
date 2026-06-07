@@ -654,6 +654,7 @@
         function updateAverageDisplay() {
             let totalWeight = 0;
             let weightedSum = 0;
+            let activeCount = 0;
 
             appState.activeKeys.forEach(k => {
                 if (!appState.skipped[k]) {
@@ -661,22 +662,24 @@
                     const r = appState.ratings[k];
                     totalWeight += w;
                     weightedSum += (r * w);
+                    activeCount++;
                 }
             });
 
             const avg = totalWeight === 0 ? 0 : weightedSum / totalWeight;
             const avgDisplay = document.getElementById('overall-average');
             if (avgDisplay) {
-                avgDisplay.innerText = avg.toFixed(2);
+                avgDisplay.innerText = activeCount === 0 ? 'N/A' : avg.toFixed(2);
             }
             
             const starsContainer = document.getElementById('vertical-stars');
             if (starsContainer) {
                 let starsHTML = '';
+                let displayAvg = activeCount === 0 ? 0 : avg;
                 for (let i = 1; i <= 5; i++) {
                     let fillPercent = 0;
-                    if (avg >= i) fillPercent = 100;
-                    else if (avg >= i - 1) fillPercent = (avg - (i - 1)) * 100;
+                    if (displayAvg >= i) fillPercent = 100;
+                    else if (displayAvg >= i - 1) fillPercent = (displayAvg - (i - 1)) * 100;
                     
                     starsHTML += `
                         <div class="relative w-4 h-4 sm:w-5 sm:h-5 mx-[1px] flex-shrink-0">
@@ -755,13 +758,17 @@
         function saveRating(e = window.event) {
             let totalWeight = 0;
             let weightedSum = 0;
+            let activeCount = 0;
+            
             appState.activeKeys.forEach(k => {
                 if (!appState.skipped[k]) {
                     totalWeight += appState.weights[k];
                     weightedSum += (appState.ratings[k] * appState.weights[k]);
+                    activeCount++;
                 }
             });
-            const avg = totalWeight === 0 ? 0 : weightedSum / totalWeight;
+            
+            const avg = activeCount === 0 ? null : (totalWeight === 0 ? 0 : weightedSum / totalWeight);
             
             let targetView = 'home';
             if (appState.guidedFlow) {
@@ -814,11 +821,18 @@
                 if (appState.compScores['comp_genres'] !== undefined) {
                     allScores.push(appState.compScores['comp_genres']);
                 }
-                compAvg = (allScores.reduce((a,b)=>a+b,0) / allScores.length).toFixed(2);
+                
+                let validScores = allScores.filter(s => s !== null);
+                if (validScores.length > 0) {
+                    compAvg = (validScores.reduce((a,b)=>a+b,0) / validScores.length).toFixed(2);
+                } else {
+                    compAvg = 'N/A';
+                }
             }
 
-            const quickScore = appState.standaloneScores['quick'];
-            const hasQuickScore = quickScore !== undefined;
+            const quickScoreRaw = appState.standaloneScores['quick'];
+            const hasQuickScore = quickScoreRaw !== undefined;
+            const quickScoreDisplay = hasQuickScore ? (quickScoreRaw === null ? 'N/A' : quickScoreRaw.toFixed(2)) : '';
 
             const html = `
                 <div class="flex flex-col items-center w-full max-w-4xl mx-auto space-y-4">
@@ -850,7 +864,7 @@
                                     Quick Rate
                                 </span>
                                 <span class="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-light text-center">
-                                    ${hasQuickScore ? `Completed - Score: <span class="font-bold text-gray-900 dark:text-white">${quickScore.toFixed(2)}</span>` : ratersData.quick.description}
+                                    ${hasQuickScore ? `Completed - Score: <span class="font-bold text-gray-900 dark:text-white">${quickScoreDisplay}</span>` : ratersData.quick.description}
                                 </span>
                             </button>
                             ${hasQuickScore ? `
@@ -874,8 +888,9 @@
                             .filter(key => key !== 'quick' && key !== 'comp_genres' && !key.startsWith('genre_'))
                             .sort((a, b) => ratersData[a].title.localeCompare(ratersData[b].title))
                             .map((key, index) => {
-                            const hasScore = appState.standaloneScores[key] !== undefined;
-                            const scoreDisplay = hasScore ? appState.standaloneScores[key].toFixed(2) : '';
+                            const rawScore = appState.standaloneScores[key];
+                            const hasScore = rawScore !== undefined;
+                            const scoreDisplay = hasScore ? (rawScore === null ? 'N/A' : rawScore.toFixed(2)) : '';
                             const animStyle = skipAnimation ? 'opacity: 1; transform: none;' : `animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${0.1 * (index + 1)}s forwards; opacity: 0; transform: translateY(10px);`;
                             
                             return `
@@ -931,8 +946,9 @@
 
                     <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                         ${genres.map((g, index) => {
-                            const hasScore = appState.standaloneScores[g.id] !== undefined;
-                            const scoreDisplay = hasScore ? appState.standaloneScores[g.id].toFixed(2) : '';
+                            const rawScore = appState.standaloneScores[g.id];
+                            const hasScore = rawScore !== undefined;
+                            const scoreDisplay = hasScore ? (rawScore === null ? 'N/A' : rawScore.toFixed(2)) : '';
                             const animStyle = skipAnimation ? 'opacity: 1; transform: none;' : `animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${0.1 * (index + 1)}s forwards; opacity: 0; transform: translateY(10px);`;
 
                             return `
@@ -1041,7 +1057,7 @@
                     ` : ''}
 
                     <div class="flex flex-col items-start mb-8 border-b border-gray-100 dark:border-gray-800 pb-8 w-full mt-2">
-                        <button onclick="${appState.guidedFlow ? `appState.guidedFlow = false; navigateTo('home')` : `navigateTo('${backTarget}')`}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center mb-6 group">
+                        <button onclick="${appState.guidedFlow ? `appState.guidedFlow = false; navigateTo('home')` : `MapsTo('${backTarget}')`}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center mb-6 group">
                             <svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                             ${backText}
                         </button>
